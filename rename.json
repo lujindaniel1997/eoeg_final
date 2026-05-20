@@ -1,0 +1,50 @@
+{
+    "rename_proj": {
+        "Actual CO2 Efficiency [%]" : "CO2 Removal Efficiency [%]",
+        "Actual Plant Efficiency [%]" : "Selectivity [%]",
+        "Selectivity [%]": "Selectivity [%]",
+        "Top Shell Temperature [C]": "Top Shell Temperature [C]",
+        "Actual Top Shell Temperature [C]": "Top Shell Temperature [C]"
+
+    },
+    "model_pred_vars": {
+        "(Direct) Predicted TST (°C)": "Predicted TST [C]",
+        "(Direct) Predicted Selectivity (%)": "Predicted CE [%]",
+        "Predicted TST" : "Predicted TST [C]", 
+        "Predicted CE" : "Predicted CE [%]",
+        "Scaled TST": "Scaled TST [C]",
+        "Scaled CE": "Scaled CE [%]",
+        "(Scaling) Projected Selectivity (%)": "Projection CE [%]",
+        "(Scaling) Projected TST (°C)": "Projection TST [C]"
+    },
+    "plant_var_rename": {
+        "Reactor Vol Cumulative EO (klb/ft3)": "Cumulative EO (bed based) [klb/ft3]",
+        "Actual CO2 Efficiency (%)":"CO2 Removal Efficiency [%]",
+        "Actual CO2 Efficiency [%]": "CO2 Removal Efficiency [%]",
+        "CO2 Removal Efficiency [%]":"CO2 Removal Efficiency [%]",
+        "Actual O2 Efficiency (%)": "Actual O2 Efficiency (%)",
+        "Actual O2 Efficiency [%]": "Actual O2 Efficiency (%)" ,
+        "Actual Plant Selectivity (%)": "Actual Plant Efficiency [%]",
+        "Actual TST (°C)": "Actual TST [C]",
+        "Actual CE" : "Selectivity [%]",
+        "Average DP (psi)": "Pressure Drop [psia]",
+        "CatVol Workrate (lb/ft3/h)": "Work Rate (cat. based) [lb/h/ft3]",
+        "CatVol Workrate (kg/h/m3)": "Work Rate (cat. based) [kg/h/m3]",
+        "EO Production Rate (t/h)": "EO Production Rate [t/h]",
+        "FB Efficiency (%)": "FB Efficiency [%]",
+        "FBdEO%": "FB dEO [%]",
+        "GHSV": "GHSV (bed based) [1/h]",
+        "GHSV_cat": "GHSV (cat. based) [1/h]",
+        "GHSV (cat.)": "GHSV (cat. based) [1/h]",
+        "Inlet C2H4%": "Inlet C2H4 [%]",
+        "Inlet C2H6%": "Inlet C2H6 [%]",
+        "Inlet CO2%": "Inlet CO2 [%]",
+        "Inlet EO%": "Inlet EO [%]",
+        "Inlet Gas Temperature (°C)": "Inlet Gas Temperature [C]",
+        "Inlet O2%": "Inlet O2 [%]",
+        "Inlet H2O%": "Inlet H2O [%]",
+        "Inlet Pressure (psia)": "Inlet Pressure [psia]",
+        "Outlet Gas Temperature (°C)": "Outlet Gas Temperature [C]",
+        "DEO%": "dEO [%]"
+    }
+}

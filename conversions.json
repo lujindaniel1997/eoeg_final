@@ -1,0 +1,94 @@
+{
+    "Temp_Unit": {
+        "C": {
+            "slope": 1,
+            "b": 0
+        },
+        "F": {
+            "slope": 1.8,
+            "b": 32
+        },
+        "replace_string": "[C]",
+        "default": "C"
+    },
+    "Pres_Unit": {
+        "psia": {
+            "slope": 1,
+            "b": 0
+        },
+        "bar": {
+            "slope": 0.0689476,
+            "b": 0
+        },
+        "kg/cm2": {
+            "slope": 0.070307,
+            "b": 0
+        },
+        "kpa": {
+            "slope": 6.89476,
+            "b": 0
+        },
+        "MPa": {
+            "slope": 0.00689476,
+            "b": 0
+        },       
+        "replace_string": "[psia]",
+        "default": "psia"
+    },
+    "MassFlow_Unit": {
+        "kg/s": {
+            "slope": 1,
+            "b": 0
+        },
+        "lb/h": {
+            "slope": 7936.64,
+            "b": 0
+        },
+        "klb/h": {
+            "slope": 7.93664,
+            "b": 0
+        },
+        "t/h": {
+            "slope": 3.6,
+            "b": 0
+        },
+        "TPD": {
+            "slope": 86.4,
+            "b": 0
+        },
+        "MMlb/day": {
+            "slope": 0.19047936,
+            "b": 0
+        },
+        "kta": {
+            "slope": 31.536,
+            "b": 0
+        },       
+        "replace_string": "[kg/s]",
+        "default": "kg/s"
+    }, 
+    "WorkRate_Unit": {
+        "lb/h/ft3": {
+            "slope": 1,
+            "b": 0
+        },
+        "kg/h/m3": {
+            "slope": 16.0185,
+            "b": 0
+        },
+        "replace_string": "[lb/h/ft3]",
+        "default": "lb/h/ft3"
+    }, 
+    "cumEO_unit": {
+        "klb/ft3": {
+            "slope": 1,
+            "b": 0
+        },
+        "kt/m3": {
+            "slope": 0.0176573,
+            "b": 0
+        },
+        "replace_string": "[klb/ft3]",
+        "default": "klb/ft3"
+    }
+}
