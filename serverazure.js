@@ -1,52 +1,53 @@
+
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios'); // Add axios for backend API calls
+const axios = require('axios');
 const { sql, poolPromise } = require('./db');
-const conversionsData = require('./conversions.json'); 
-const renameData = require('./rename.json'); 
- 
+const conversionsData = require('./conversions.json');
+const renameData = require('./rename.json');
+
 const app = express();
-const port = 3000; 
- 
+const port = 3000;
+
 // --- Middleware ---
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 
+
+
 // --- Azure AD Configuration ---
-const CLIENT_ID = process.env.AZURE_CLIENT_ID || 'YOUR_AZURE_CLIENT_ID';
-const CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET || 'YOUR_AZURE_CLIENT_SECRET';
-const TENANT_ID = process.env.AZURE_TENANT_ID || 'common'; // 'common' or specific Tenant GUID
-const REDIRECT_URI = process.env.AZURE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001'; // Your React application URL
+const CLIENT_ID = process.env.AZURE_CLIENT_ID;
+const CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
+const TENANT_ID = process.env.AZURE_TENANT_ID;
+const REDIRECT_URI = process.env.AZURE_REDIRECT_URI || 'http://localhost:3000/auth';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-// --- API Routes ---
-
-/**
- * Endpoint 1: Generate Azure Login URL 
- * Called by React via Axios to get the interactive login link
- */
+// ===========================================================
+// ✅ LOGIN URL
+// ===========================================================
 app.get('/api/auth/login-url', (req, res) => {
-  const azureAuthUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize` +
+  const azureAuthUrl =
+    `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize` +
     `?client_id=${CLIENT_ID}` +
     `&response_type=code` +
     `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
     `&response_mode=query` +
     `&scope=${encodeURIComponent('openid profile email User.Read')}` +
     `&state=secure_state_string`;
-  
+
   res.json({ url: azureAuthUrl });
 });
 
-/**
- * Endpoint 2: Azure Authentication Callback
- * Azure redirects back here with an authorization code. 
- * The server exchanges it for tokens using Axios.
- */
-app.get('/api/auth/callback', async (req, res) => {
+// ===========================================================
+// ✅ AZURE AUTH CALLBACK
+// ===========================================================
+app.get('/auth', async (req, res) => {
   const { code, error, error_description } = req.query;
 
   if (error) {
-    return res.redirect(`${FRONTEND_URL}/?auth_error=${encodeURIComponent(error_description || error)}`);
+    return res.redirect(
+      `${FRONTEND_URL}/?auth_error=${encodeURIComponent(error_description || error)}`
+    );
   }
 
   if (!code) {
@@ -54,9 +55,9 @@ app.get('/api/auth/callback', async (req, res) => {
   }
 
   try {
-    // 1. Exchange Auth Code for Access Token via Axios POST
+    // ✅ 1. Exchange auth code for token
     const tokenUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
-    
+
     const tokenParams = new URLSearchParams();
     tokenParams.append('client_id', CLIENT_ID);
     tokenParams.append('scope', 'openid profile email User.Read');
@@ -71,29 +72,64 @@ app.get('/api/auth/callback', async (req, res) => {
 
     const { access_token } = tokenResponse.data;
 
-    // 2. Fetch User Profile Data from Microsoft Graph API using the Access Token
+    // ✅ 2. Fetch user profile
     const graphResponse = await axios.get('https://graph.microsoft.com/v1.0/me', {
       headers: { Authorization: `Bearer ${access_token}` }
     });
 
     const profile = graphResponse.data;
-    
-    // 3. Packet the User Data
-    const sessionUser = {
+
+    // ✅ 3. Convert Azure → USERID format (IMPORTANT FIX)
+    // Example: ub13600@dow.com → UB13600
+    const upn = profile.userPrincipalName || '';
+
+    const userId = upn
+      .split('@')[0]     // remove domain
+      .toUpperCase()     // match DB format
+      .trim();
+
+    if (!userId) {
+      return res.redirect(`${FRONTEND_URL}/?auth_error=Invalid Azure user`);
+    }
+
+    // ✅ 4. Map to Proj_user table
+    const pool = await poolPromise;
+
+    const userResult = await pool.request()
+      .input('userId', sql.VarChar, userId)
+      .query(`
+        SELECT [User], DB_Table
+        FROM dbo.Proj_user
+        WHERE [User] = @userId
+      `);
+
+    if (!userResult || !userResult.recordset || userResult.recordset.length === 0) {
+      return res.redirect(`${FRONTEND_URL}/?auth_error=User not found in Proj_user`);
+    }
+
+    const mappedUser = userResult.recordset[0];
+
+    // ✅ 5. Send data to frontend
+    const userPayload = {
       name: profile.displayName,
-      email: profile.mail || profile.userPrincipalName,
-      id: profile.id
+      userId,
+      mappedUser: mappedUser.User,
+      dbTable: mappedUser.DB_Table   // optional (helpful later)
     };
 
-    // 4. Safely encode the user data and redirect back to the React app landing page
-    const encodedUser = encodeURIComponent(JSON.stringify(sessionUser));
-    res.redirect(`${FRONTEND_URL}/?user=${encodedUser}`);
+    const encoded = encodeURIComponent(JSON.stringify(userPayload));
+
+    return res.redirect(`${FRONTEND_URL}/?user=${encoded}`);
 
   } catch (err) {
     console.error('Azure authentication error:', err.response?.data || err.message);
-    res.redirect(`${FRONTEND_URL}/?auth_error=${encodeURIComponent('Token exchange failed')}`);
+
+    return res.redirect(
+      `${FRONTEND_URL}/?auth_error=${encodeURIComponent('Token exchange failed')}`
+    );
   }
 });
+
  
 // --- API Routes ---
  
@@ -590,3 +626,4 @@ app.post('/api/model-list', async (req, res) => {
 app.listen(port, () => {
   console.log(`Backend server listening on port ${port}`);
 }); 
+ 
